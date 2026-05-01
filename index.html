@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MarketBot — Marketing AI Tutor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    /* ── DESIGN TOKENS ── */
+    :root {
+      --ink:       #1a1a2e;
+      --ink-soft:  #4a4a6a;
+      --bg:        #f5f3ee;
+      --bg-card:   #ffffff;
+      --gold:      #c9a84c;
+      --gold-pale: #f5edda;
+      --teal:      #2a7d6f;
+      --teal-pale: #e0f2ef;
+      --red-soft:  #fdecea;
+      --radius:    14px;
+      --shadow:    0 4px 24px rgba(26,26,46,0.10);
+      --shadow-lg: 0 12px 48px rgba(26,26,46,0.16);
+      --font-head: 'DM Serif Display', Georgia, serif;
+      --font-body: 'DM Sans', sans-serif;
+      --anim:      0.25s cubic-bezier(.4,0,.2,1);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      font-family: var(--font-body);
+      background: var(--bg);
+      color: var(--ink);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── LAYOUT ── */
+    .shell {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 12px;
+      gap: 10px;
+    }
+
+    /* ── HEADER ── */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--ink);
+      border-radius: var(--radius);
+      padding: 14px 20px;
+      box-shadow: var(--shadow);
+      flex-shrink: 0;
+    }
+    .logo-group { display: flex; align-items: center; gap: 12px; }
+    .logo-icon {
+      width: 40px; height: 40px;
+      background: linear-gradient(135deg, var(--gold) 0%, #e8c46a 100%);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+      box-shadow: 0 2px 8px rgba(201,168,76,0.4);
+    }
+    .logo-text { display: flex; flex-direction: column; }
+    .logo-name {
+      font-family: var(--font-head);
+      font-size: 1.15rem;
+      color: #ffffff;
+      letter-spacing: 0.01em;
+      line-height: 1;
+    }
+    .logo-sub {
+      font-size: 0.7rem;
+      color: var(--gold);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+    .header-right { display: flex; align-items: center; gap: 10px; }
+    .status-dot {
+      width: 8px; height: 8px;
+      background: #4ade80;
+      border-radius: 50%;
+      box-shadow: 0 0 6px #4ade80;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; } 50% { opacity: 0.4; }
+    }
+    .lang-badge {
+      font-size: 0.68rem;
+      color: var(--gold);
+      border: 1px solid var(--gold);
+      border-radius: 20px;
+      padding: 3px 9px;
+      letter-spacing: 0.05em;
+    }
+
+    /* ── QUICK ACTIONS ── */
+    .quick-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      flex-shrink: 0;
+    }
+    .quick-btn {
+      font-family: var(--font-body);
+      font-size: 0.75rem;
+      font-weight: 500;
+      padding: 7px 14px;
+      border-radius: 20px;
+      border: 1.5px solid transparent;
+      cursor: pointer;
+      transition: all var(--anim);
+      letter-spacing: 0.02em;
+    }
+    .quick-btn.define  { background: var(--gold-pale); color: #8a6a10; border-color: #e0c87a; }
+    .quick-btn.example { background: var(--teal-pale);  color: #1d5e53; border-color: #7eccc2; }
+    .quick-btn.quiz    { background: var(--ink);        color: #ffffff;  border-color: transparent; }
+    .quick-btn.summary { background: #f0eeff;           color: #4a3a8a; border-color: #c4b8f8; }
+    .quick-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
+    .quick-btn:active { transform: translateY(0); }
+
+    /* ── CHAT AREA ── */
+    .chat-scroll {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 4px 2px;
+      scroll-behavior: smooth;
+    }
+    .chat-scroll::-webkit-scrollbar { width: 5px; }
+    .chat-scroll::-webkit-scrollbar-track { background: transparent; }
+    .chat-scroll::-webkit-scrollbar-thumb { background: #d0cec8; border-radius: 10px; }
+
+    /* ── MESSAGES ── */
+    .msg {
+      display: flex;
+      gap: 10px;
+      animation: fadeUp 0.3s ease both;
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .msg.user  { flex-direction: row-reverse; }
+    .msg.bot   { flex-direction: row; }
+
+    .avatar {
+      width: 34px; height: 34px;
+      border-radius: 10px;
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+    }
+    .msg.bot  .avatar { background: var(--ink); }
+    .msg.user .avatar { background: var(--gold); }
+
+    .bubble {
+      max-width: 72%;
+      padding: 12px 16px;
+      border-radius: var(--radius);
+      font-size: 0.875rem;
+      line-height: 1.65;
+      position: relative;
+      box-shadow: var(--shadow);
+    }
+    .msg.bot  .bubble {
+      background: var(--bg-card);
+      border-bottom-left-radius: 4px;
+      color: var(--ink);
+    }
+    .msg.user .bubble {
+      background: var(--ink);
+      border-bottom-right-radius: 4px;
+      color: #ffffff;
+    }
+
+    /* source citation tag */
+    .source-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 8px;
+      font-size: 0.7rem;
+      color: var(--teal);
+      background: var(--teal-pale);
+      border-radius: 6px;
+      padding: 3px 8px;
+    }
+
+    /* general knowledge tag */
+    .gk-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 8px;
+      font-size: 0.7rem;
+      color: #7a5a10;
+      background: var(--gold-pale);
+      border-radius: 6px;
+      padding: 3px 8px;
+    }
+
+    /* typing indicator */
+    .typing-indicator {
+      display: flex; align-items: center; gap: 5px;
+      padding: 14px 16px;
+    }
+    .dot {
+      width: 7px; height: 7px;
+      background: var(--ink-soft);
+      border-radius: 50%;
+      animation: bounce 1.2s infinite;
+    }
+    .dot:nth-child(2) { animation-delay: 0.2s; }
+    .dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes bounce {
+      0%, 80%, 100% { transform: translateY(0); }
+      40%           { transform: translateY(-6px); }
+    }
+
+    /* ── INPUT BAR ── */
+    .input-bar {
+      display: flex;
+      gap: 8px;
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      padding: 10px 12px;
+      box-shadow: var(--shadow);
+      flex-shrink: 0;
+      border: 1.5px solid #e8e4dc;
+      transition: border-color var(--anim);
+    }
+    .input-bar:focus-within { border-color: var(--gold); }
+
+    #userInput {
+      flex: 1;
+      border: none;
+      outline: none;
+      font-family: var(--font-body);
+      font-size: 0.875rem;
+      color: var(--ink);
+      background: transparent;
+      resize: none;
+      line-height: 1.5;
+      max-height: 120px;
+    }
+    #userInput::placeholder { color: #b0aaa0; }
+
+    .send-btn {
+      width: 38px; height: 38px;
+      background: var(--ink);
+      border: none; border-radius: 10px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all var(--anim);
+      flex-shrink: 0;
+    }
+    .send-btn:hover { background: var(--teal); transform: scale(1.05); }
+    .send-btn:active { transform: scale(0.97); }
+    .send-btn svg { width: 16px; height: 16px; fill: #fff; }
+
+    /* ── QUIZ PANEL ── */
+    .quiz-panel {
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      box-shadow: var(--shadow);
+      border: 1.5px solid #e8e4dc;
+      animation: fadeUp 0.3s ease both;
+    }
+    .quiz-panel.hidden { display: none; }
+
+    .quiz-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 14px;
+    }
+    .quiz-title {
+      font-family: var(--font-head);
+      font-size: 1rem;
+      color: var(--ink);
+    }
+    .quiz-progress {
+      font-size: 0.72rem;
+      color: var(--ink-soft);
+      background: var(--bg);
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+    .quiz-score-bar {
+      height: 4px;
+      background: #e8e4dc;
+      border-radius: 2px;
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+    .quiz-score-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--teal), var(--gold));
+      border-radius: 2px;
+      transition: width 0.5s ease;
+      width: 0%;
+    }
+
+    .quiz-question {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--ink);
+      line-height: 1.55;
+      margin-bottom: 14px;
+    }
+    .quiz-options { display: flex; flex-direction: column; gap: 8px; }
+    .quiz-option {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 14px;
+      border: 1.5px solid #e8e4dc;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 0.82rem;
+      color: var(--ink);
+      transition: all var(--anim);
+      background: var(--bg);
+    }
+    .quiz-option:hover:not(.locked) { border-color: var(--gold); background: var(--gold-pale); }
+    .quiz-option.selected { border-color: var(--ink); background: #eeedf5; }
+    .quiz-option.correct  { border-color: var(--teal); background: var(--teal-pale); color: #1d5e53; }
+    .quiz-option.wrong    { border-color: #e05050;     background: var(--red-soft);  color: #7a1a1a; }
+    .quiz-option.locked   { cursor: default; }
+
+    .option-label {
+      width: 24px; height: 24px;
+      border-radius: 6px;
+      background: #fff;
+      border: 1.5px solid currentColor;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.72rem; font-weight: 600;
+      flex-shrink: 0;
+    }
+
+    .quiz-explanation {
+      margin-top: 12px;
+      padding: 10px 14px;
+      background: var(--gold-pale);
+      border-left: 3px solid var(--gold);
+      border-radius: 0 8px 8px 0;
+      font-size: 0.8rem;
+      line-height: 1.55;
+      color: #5a4010;
+      display: none;
+    }
+    .quiz-explanation.visible { display: block; }
+
+    .quiz-actions {
+      display: flex; gap: 8px; margin-top: 14px; justify-content: flex-end;
+    }
+    .quiz-btn {
+      font-family: var(--font-body);
+      font-size: 0.78rem; font-weight: 500;
+      padding: 8px 18px;
+      border-radius: 8px; border: none; cursor: pointer;
+      transition: all var(--anim);
+    }
+    .quiz-btn.primary  { background: var(--ink); color: #fff; }
+    .quiz-btn.primary:hover  { background: var(--teal); }
+    .quiz-btn.secondary { background: var(--bg); color: var(--ink-soft); border: 1.5px solid #e0ddd6; }
+    .quiz-btn.secondary:hover { border-color: var(--ink); color: var(--ink); }
+
+    .quiz-result {
+      text-align: center;
+      padding: 20px 0 8px;
+      display: none;
+    }
+    .quiz-result.visible { display: block; }
+    .result-score {
+      font-family: var(--font-head);
+      font-size: 2.5rem;
+      color: var(--ink);
+    }
+    .result-label {
+      font-size: 0.8rem;
+      color: var(--ink-soft);
+      margin-top: 4px;
+    }
+    .result-emoji { font-size: 2rem; margin-bottom: 8px; }
+
+    /* ── WELCOME ── */
+    .welcome-card {
+      background: linear-gradient(135deg, var(--ink) 0%, #2d2d50 100%);
+      border-radius: var(--radius);
+      padding: 20px 22px;
+      color: #fff;
+      box-shadow: var(--shadow-lg);
+    }
+    .welcome-card h2 {
+      font-family: var(--font-head);
+      font-size: 1.2rem;
+      margin-bottom: 6px;
+      color: var(--gold);
+    }
+    .welcome-card p {
+      font-size: 0.8rem;
+      line-height: 1.6;
+      color: #c8c8e0;
+    }
+    .welcome-topics {
+      display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px;
+    }
+    .topic-pill {
+      font-size: 0.68rem;
+      background: rgba(201,168,76,0.2);
+      border: 1px solid rgba(201,168,76,0.4);
+      color: var(--gold);
+      padding: 3px 10px;
+      border-radius: 20px;
+      letter-spacing: 0.04em;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 520px) {
+      .shell { padding: 8px; gap: 8px; }
+      .bubble { max-width: 85%; }
+      .logo-name { font-size: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- HEADER -->
+  <header>
+    <div class="logo-group">
+      <div class="logo-icon">📚</div>
+      <div class="logo-text">
+        <span class="logo-name">MarketBot</span>
+        <span class="logo-sub">Marketing 101 Tutor</span>
+      </div>
+    </div>
+    <div class="header-right">
+      <span class="lang-badge">BG / EN</span>
+      <div class="status-dot" title="Online"></div>
+    </div>
+  </header>
+
+  <!-- QUICK ACTIONS -->
+  <div class="quick-actions">
+    <button class="quick-btn define"  onclick="quickAction('Define')">📖 Define</button>
+    <button class="quick-btn example" onclick="quickAction('Example')">💡 Example</button>
+    <button class="quick-btn quiz"    onclick="openQuiz()">🎯 Quiz Me</button>
+    <button class="quick-btn summary" onclick="quickAction('Summarize')">📋 Summarize</button>
+  </div>
+
+  <!-- QUIZ PANEL (hidden by default) -->
+  <div class="quiz-panel hidden" id="quizPanel">
+    <div class="quiz-header">
+      <span class="quiz-title">Quick Quiz — Marketing 101</span>
+      <span class="quiz-progress" id="quizProgress">1 / 5</span>
+    </div>
+    <div class="quiz-score-bar"><div class="quiz-score-fill" id="quizScoreFill"></div></div>
+    <div id="quizBody">
+      <!-- rendered by JS -->
+    </div>
+  </div>
+
+  <!-- CHAT SCROLL -->
+  <div class="chat-scroll" id="chatScroll">
+    <!-- Welcome card -->
+    <div class="welcome-card">
+      <h2>Hello! I'm MarketBot 👋</h2>
+      <p>Ask me anything about Marketing 101 — definitions, frameworks, examples, or exam prep. I answer in <strong style="color:#fff">Bulgarian or English</strong> depending on how you write to me.</p>
+      <div class="welcome-topics">
+        <span class="topic-pill">STP Framework</span>
+        <span class="topic-pill">4Ps / 7Ps</span>
+        <span class="topic-pill">Consumer Behaviour</span>
+        <span class="topic-pill">Branding</span>
+        <span class="topic-pill">Market Research</span>
+        <span class="topic-pill">SWOT / PESTLE</span>
+        <span class="topic-pill">Pricing Strategies</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- INPUT BAR -->
+  <div class="input-bar">
+    <textarea id="userInput" rows="1" placeholder="Ask a marketing question… / Задай въпрос по маркетинг…" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+    <button class="send-btn" onclick="sendMessage()" title="Send">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+      </svg>
+    </button>
+  </div>
+
+</div>
+
+<script>
+// ══════════════════════════════════════════════
+// CONFIGURATION — edit these before deploying
+// ══════════════════════════════════════════════
+const CONFIG = {
+  // Your Flowise hosted endpoint (Render URL + chatflow ID)
+  // The AI brain is Claude Sonnet (via Anthropic API) — configured in Flowise
+  FLOWISE_API: 'https://marketbot-flowise.onrender.com/api/v1/prediction/2b24fa68-1d57-4aab-be38-421f813e7b1c',
+
+  // Session ID: anonymous per-tab session
+  SESSION_ID: 'session_' + Math.random().toString(36).slice(2, 11),
+
+  // Course
+  COURSE_ID: 'MKT101',
+
+  // Analytics: Supabase connection (anon/public key is safe here)
+  SUPABASE_URL:      'https://shmtsaxamtgmswgujmtc.supabase.co/',
+  SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNobXRzYXhhbXRnbXN3Z3VqbXRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1OTE2MzUsImV4cCI6MjA5MzE2NzYzNX0.YNOmAb6KLgCtubp6apT3qNd5Q8-mFWIX0Wzur9RB8e4',
+};
+
+// ══════════════════════════════════════════════
+// QUIZ DATA
+// (Mirrors the Supabase seed — also loaded here
+//  for fully offline quiz capability)
+// ══════════════════════════════════════════════
+const QUIZ_EN = [
+  {
+    q: 'Which of the following best describes the STP framework?',
+    options: [
+      { label: 'A', text: 'Sales, Targeting, Promotion' },
+      { label: 'B', text: 'Segmentation, Targeting, Positioning' },
+      { label: 'C', text: 'Strategy, Tactics, Planning' },
+      { label: 'D', text: 'Segmentation, Testing, Pricing' },
+    ],
+    correct: ['B'],
+    explanation: 'STP stands for Segmentation, Targeting, and Positioning — a three-step model to identify the right audience and craft a clear value proposition.',
+    topic: 'STP',
+  },
+  {
+    q: 'The 4Ps of the marketing mix are:',
+    options: [
+      { label: 'A', text: 'People, Process, Physical Evidence, Promotion' },
+      { label: 'B', text: 'Product, Price, Place, Promotion' },
+      { label: 'C', text: 'Product, Profit, Place, Publicity' },
+      { label: 'D', text: 'Price, People, Publicity, Process' },
+    ],
+    correct: ['B'],
+    explanation: 'The classic 4Ps (Product, Price, Place, Promotion) form the foundation of the marketing mix.',
+    topic: '4Ps',
+  },
+  {
+    q: 'Which segmentation variable divides the market by age, gender, and income?',
+    options: [
+      { label: 'A', text: 'Geographic' },
+      { label: 'B', text: 'Psychographic' },
+      { label: 'C', text: 'Demographic' },
+      { label: 'D', text: 'Behavioural' },
+    ],
+    correct: ['C'],
+    explanation: 'Demographic segmentation uses measurable statistics like age, gender, income, and education.',
+    topic: 'Segmentation',
+  },
+  {
+    q: 'A unique selling proposition (USP) is best described as:',
+    options: [
+      { label: 'A', text: 'The lowest price a company can offer' },
+      { label: 'B', text: 'The feature that makes a product distinct from competitors' },
+      { label: 'C', text: 'The total number of products in a product line' },
+      { label: 'D', text: 'A legal trademark for a brand name' },
+    ],
+    correct: ['B'],
+    explanation: 'A USP is the one thing that makes your product stand out — the reason customers choose you over others.',
+    topic: 'Branding',
+  },
+  {
+    q: 'In the consumer buying process, which stage comes AFTER problem recognition?',
+    options: [
+      { label: 'A', text: 'Purchase decision' },
+      { label: 'B', text: 'Post-purchase evaluation' },
+      { label: 'C', text: 'Information search' },
+      { label: 'D', text: 'Alternative evaluation' },
+    ],
+    correct: ['C'],
+    explanation: 'The five stages: Problem Recognition → Information Search → Evaluation of Alternatives → Purchase → Post-Purchase.',
+    topic: 'Consumer Behaviour',
+  },
+];
+
+const QUIZ_BG = [
+  {
+    q: 'Кой от следните отговори най-добре описва модела STP?',
+    options: [
+      { label: 'А', text: 'Продажби, Таргетиране, Промоция' },
+      { label: 'Б', text: 'Сегментиране, Таргетиране, Позициониране' },
+      { label: 'В', text: 'Стратегия, Тактика, Планиране' },
+      { label: 'Г', text: 'Сегментиране, Тестване, Ценообразуване' },
+    ],
+    correct: ['Б'],
+    explanation: 'STP означава Сегментиране, Таргетиране и Позициониране — модел за идентифициране на правилната аудитория.',
+    topic: 'STP',
+  },
+  {
+    q: 'Маркетинг миксът 4P включва:',
+    options: [
+      { label: 'А', text: 'Хора, Процес, Физически доказателства, Промоция' },
+      { label: 'Б', text: 'Продукт, Цена, Място, Промоция' },
+      { label: 'В', text: 'Продукт, Печалба, Място, Публичност' },
+      { label: 'Г', text: 'Цена, Хора, Публичност, Процес' },
+    ],
+    correct: ['Б'],
+    explanation: 'Класическите 4P (Продукт, Цена, Място, Промоция) са основата на маркетинг микса.',
+    topic: '4Ps',
+  },
+  {
+    q: 'Коя променлива на сегментиране разделя пазара по възраст, пол и доход?',
+    options: [
+      { label: 'А', text: 'Географска' },
+      { label: 'Б', text: 'Психографска' },
+      { label: 'В', text: 'Демографска' },
+      { label: 'Г', text: 'Поведенческа' },
+    ],
+    correct: ['В'],
+    explanation: 'Демографската сегментация използва данни като възраст, пол, доход и образование.',
+    topic: 'Segmentation',
+  },
+  {
+    q: 'Уникалното търговско предложение (USP) е:',
+    options: [
+      { label: 'А', text: 'Най-ниската цена, която компанията може да предложи' },
+      { label: 'Б', text: 'Характеристиката, която отличава продукта от конкурентите' },
+      { label: 'В', text: 'Общият брой продукти в продуктовата линия' },
+      { label: 'Г', text: 'Правна търговска марка' },
+    ],
+    correct: ['Б'],
+    explanation: 'USP е това, което прави вашия продукт уникален — причината клиентите да изберат вас.',
+    topic: 'Branding',
+  },
+  {
+    q: 'В процеса на потребителско решение, кой етап следва след осъзнаването на проблема?',
+    options: [
+      { label: 'А', text: 'Решение за покупка' },
+      { label: 'Б', text: 'Следпокупкова оценка' },
+      { label: 'В', text: 'Търсене на информация' },
+      { label: 'Г', text: 'Оценка на алтернативи' },
+    ],
+    correct: ['В'],
+    explanation: 'Петте етапа: Осъзнаване на проблема → Търсене на информация → Оценка на алтернативи → Покупка → Следпокупкова оценка.',
+    topic: 'Consumer Behaviour',
+  },
+];
+
+// ══════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════
+let chatHistory = [];  // {role, content}[]
+let isLoading   = false;
+let quizState   = null; // {questions, idx, score, lang, selected, answered}
+
+// FIX 1 — Quiz: track seen question IDs per language to avoid repeats
+const seenQuizIds = { EN: new Set(), BG: new Set() };
+
+// FIX 2 — Analytics: write queue (fire-and-forget, non-blocking)
+async function logAnalytics(payload) {
+  if (!CONFIG.SUPABASE_URL || !CONFIG.SUPABASE_ANON_KEY) return;
+  try {
+    await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/chat_analytics`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': CONFIG.SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${CONFIG.SUPABASE_ANON_KEY}`,
+        'Prefer': 'return=minimal',
+      },
+      body: JSON.stringify({
+        session_id:        CONFIG.SESSION_ID,
+        course_id:         CONFIG.COURSE_ID,
+        language_detected: payload.lang,
+        question_length:   payload.questionLength,
+        had_rag_hit:       payload.hadRagHit,
+        topic_tags:        payload.topicTags || [],
+      }),
+    });
+  } catch (_) { /* analytics failure must never break the chat */ }
+}
+
+// FIX 3 — Rate limiter: max 10 messages per 60 seconds (client-side token bucket)
+const rateLimiter = {
+  max: 10,
+  windowMs: 60_000,
+  timestamps: [],
+  check() {
+    const now = Date.now();
+    this.timestamps = this.timestamps.filter(t => now - t < this.windowMs);
+    if (this.timestamps.length >= this.max) return false;
+    this.timestamps.push(now);
+    return true;
+  },
+  remainingSeconds() {
+    if (!this.timestamps.length) return 0;
+    return Math.ceil((this.windowMs - (Date.now() - this.timestamps[0])) / 1000);
+  },
+};
+
+// ══════════════════════════════════════════════
+// LANGUAGE DETECTION (simple heuristic)
+// ══════════════════════════════════════════════
+function detectLang(text) {
+  // Cyrillic character range
+  const cyrillicRatio = (text.match(/[\u0400-\u04FF]/g) || []).length / text.length;
+  return cyrillicRatio > 0.2 ? 'BG' : 'EN';
+}
+
+// ══════════════════════════════════════════════
+// CHAT FUNCTIONS
+// ══════════════════════════════════════════════
+function scrollToBottom() {
+  const el = document.getElementById('chatScroll');
+  el.scrollTop = el.scrollHeight;
+}
+
+function appendMessage(role, html, sourceDoc) {
+  const scroll = document.getElementById('chatScroll');
+  const div = document.createElement('div');
+  div.className = `msg ${role}`;
+
+  const avatar = document.createElement('div');
+  avatar.className = 'avatar';
+  avatar.textContent = role === 'bot' ? '🤖' : '🎓';
+
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble';
+  bubble.innerHTML = html;
+
+  if (sourceDoc) {
+    const tag = document.createElement('div');
+    tag.className = 'source-tag';
+    tag.innerHTML = `📄 ${sourceDoc}`;
+    bubble.appendChild(tag);
+  }
+
+  div.appendChild(avatar);
+  div.appendChild(bubble);
+  scroll.appendChild(div);
+  scrollToBottom();
+  return bubble;
+}
+
+function showTyping() {
+  const scroll = document.getElementById('chatScroll');
+  const div = document.createElement('div');
+  div.className = 'msg bot';
+  div.id = 'typingIndicator';
+
+  const avatar = document.createElement('div');
+  avatar.className = 'avatar';
+  avatar.textContent = '🤖';
+
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble';
+  bubble.innerHTML = `<div class="typing-indicator"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>`;
+
+  div.appendChild(avatar);
+  div.appendChild(bubble);
+  scroll.appendChild(div);
+  scrollToBottom();
+}
+
+function removeTyping() {
+  const el = document.getElementById('typingIndicator');
+  if (el) el.remove();
+}
+
+function escapeHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function formatBotText(text) {
+  // Basic markdown-lite formatting
+  return text
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    .replace(/`(.*?)`/g, '<code style="background:#f0eef8;padding:1px 5px;border-radius:4px;font-size:0.82em">$1</code>')
+    .replace(/\n/g, '<br>');
+}
+
+async function sendMessage(overrideText) {
+  if (isLoading) return;
+
+  // FIX 3 — Rate limiter check
+  if (!rateLimiter.check()) {
+    const secs = rateLimiter.remainingSeconds();
+    const lang = detectLang(document.getElementById('userInput').value || '');
+    const msg = lang === 'BG'
+      ? `⏳ Изпращате твърде много съобщения. Моля, изчакайте ${secs} секунди.`
+      : `⏳ You're sending too fast. Please wait ${secs} seconds before trying again.`;
+    appendMessage('bot', msg);
+    return;
+  }
+
+  const input = document.getElementById('userInput');
+  const text = (overrideText || input.value).trim();
+  if (!text) return;
+
+  input.value = '';
+  autoResize(input);
+
+  appendMessage('user', escapeHtml(text));
+  chatHistory.push({ role: 'user', content: text });
+
+  isLoading = true;
+  showTyping();
+
+  const lang = detectLang(text); // detect before fetch for analytics
+
+  try {
+    const body = {
+      question: text,
+      overrideConfig: { sessionId: CONFIG.SESSION_ID },
+      history: chatHistory.slice(-10), // last 10 turns for context
+    };
+
+    const res = await fetch(CONFIG.FLOWISE_API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+
+    removeTyping();
+
+    const reply   = data.text || data.answer || 'Sorry, I could not generate a response.';
+    const sources = data.sourceDocuments || [];
+    const hadRagHit = sources.length > 0;
+    const sourceLabel = hadRagHit
+      ? sources[0].metadata?.source || 'Course Materials'
+      : null;
+
+    appendMessage('bot', formatBotText(reply), sourceLabel);
+    chatHistory.push({ role: 'assistant', content: reply });
+
+    // FIX 2 — Log analytics (fire-and-forget, never blocks UI)
+    logAnalytics({
+      lang,
+      questionLength: text.length,
+      hadRagHit,
+      topicTags: sources.map(s => s.metadata?.topic).filter(Boolean),
+    });
+
+  } catch (err) {
+    removeTyping();
+    const errMsg = lang === 'BG'
+      ? '⚠️ Грешка при свързване с MarketBot. Моля, опитайте отново.'
+      : '⚠️ Could not reach MarketBot. Please try again in a moment.';
+    appendMessage('bot', errMsg);
+  }
+
+  isLoading = false;
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+
+function quickAction(mode) {
+  const input = document.getElementById('userInput');
+  const current = input.value.trim();
+  const topic = current || 'marketing';
+  const text = `${mode}: ${topic}`;
+  input.value = text;
+  input.focus();
+}
+
+// ══════════════════════════════════════════════
+// QUIZ ENGINE
+// ══════════════════════════════════════════════
+function shuffle(arr) {
+  return arr
+    .map(v => ({ v, r: Math.random() }))
+    .sort((a, b) => a.r - b.r)
+    .map(x => x.v);
+}
+
+function openQuiz() {
+  const panel = document.getElementById('quizPanel');
+  panel.classList.toggle('hidden');
+  if (!panel.classList.contains('hidden') && !quizState) {
+    startQuiz('EN'); // default; user can toggle
+  }
+}
+
+function startQuiz(lang) {
+  const pool = lang === 'BG' ? QUIZ_BG : QUIZ_EN;
+
+  // FIX 1 — Filter out already-seen questions; reset when pool is exhausted
+  let unseen = pool.filter(q => !seenQuizIds[lang].has(q.id));
+  if (unseen.length < 5) {
+    // Exhausted — reset seen set and start fresh
+    seenQuizIds[lang].clear();
+    unseen = [...pool];
+  }
+
+  const questions = shuffle(unseen).slice(0, 5);
+  // Mark these as seen immediately
+  questions.forEach(q => seenQuizIds[lang].add(q.id));
+
+  quizState = { questions, idx: 0, score: 0, lang, selected: null, answered: false };
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const { questions, idx, score } = quizState;
+  const q = questions[idx];
+  const total = questions.length;
+
+  document.getElementById('quizProgress').textContent = `${idx + 1} / ${total}`;
+  document.getElementById('quizScoreFill').style.width = `${(score / total) * 100}%`;
+
+  const body = document.getElementById('quizBody');
+  body.innerHTML = `
+    <div class="quiz-question">${q.q}</div>
+    <div class="quiz-options">
+      ${q.options.map(o => `
+        <div class="quiz-option" data-label="${o.label}" onclick="selectOption(this, '${o.label}')">
+          <span class="option-label">${o.label}</span>
+          <span>${o.text}</span>
+        </div>
+      `).join('')}
+    </div>
+    <div class="quiz-explanation" id="quizExp">💡 ${q.explanation}</div>
+    <div class="quiz-actions">
+      <button class="quiz-btn secondary" onclick="closeQuiz()">✕ Close</button>
+      <button class="quiz-btn primary" id="quizNextBtn" onclick="nextQuestion()" disabled>
+        ${idx + 1 < total ? 'Next →' : 'See Results'}
+      </button>
+    </div>
+    <div class="quiz-result" id="quizResult"></div>
+  `;
+  quizState.selected = null;
+  quizState.answered = false;
+}
+
+function selectOption(el, label) {
+  if (quizState.answered) return;
+  quizState.answered = true;
+  quizState.selected = label;
+
+  const { questions, idx } = quizState;
+  const q = questions[idx];
+  const isCorrect = q.correct.includes(label);
+
+  // Mark all options
+  document.querySelectorAll('.quiz-option').forEach(opt => {
+    opt.classList.add('locked');
+    const optLabel = opt.getAttribute('data-label');
+    if (q.correct.includes(optLabel)) opt.classList.add('correct');
+    else if (optLabel === label && !isCorrect) opt.classList.add('wrong');
+  });
+
+  if (isCorrect) quizState.score++;
+
+  document.getElementById('quizExp').classList.add('visible');
+  document.getElementById('quizNextBtn').disabled = false;
+}
+
+function nextQuestion() {
+  quizState.idx++;
+  if (quizState.idx < quizState.questions.length) {
+    renderQuestion();
+  } else {
+    showQuizResult();
+  }
+}
+
+function showQuizResult() {
+  const { score, questions, lang } = quizState;
+  const total = questions.length;
+  const pct = Math.round((score / total) * 100);
+
+  let emoji = '😕', msg = 'Keep studying!';
+  if (pct >= 80) { emoji = '🏆'; msg = lang === 'BG' ? 'Отлично!' : 'Excellent!'; }
+  else if (pct >= 60) { emoji = '👍'; msg = lang === 'BG' ? 'Добра работа!' : 'Good effort!'; }
+
+  document.getElementById('quizScoreFill').style.width = `${pct}%`;
+
+  document.getElementById('quizBody').innerHTML = `
+    <div class="quiz-result visible">
+      <div class="result-emoji">${emoji}</div>
+      <div class="result-score">${score}/${total}</div>
+      <div class="result-label">${msg} — ${pct}%</div>
+    </div>
+    <div class="quiz-actions" style="margin-top:16px;">
+      <button class="quiz-btn secondary" onclick="closeQuiz()">✕ Close</button>
+      <button class="quiz-btn primary" onclick="startQuiz('EN')">🔁 Retry EN</button>
+      <button class="quiz-btn primary" onclick="startQuiz('BG')">🔁 Retry BG</button>
+    </div>
+  `;
+  quizState = null;
+}
+
+function closeQuiz() {
+  document.getElementById('quizPanel').classList.add('hidden');
+  quizState = null;
+}
+</script>
+</body>
+</html>
