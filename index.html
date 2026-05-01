@@ -509,7 +509,7 @@ const CONFIG = {
   // Your Flowise hosted endpoint (Render URL + chatflow ID)
   // The AI brain is Claude Sonnet (via Anthropic API) — configured in Flowise
   FLOWISE_API: 'https://marketbot-flowise.onrender.com/api/v1/prediction/81598391-701b-4f54-bcd1-48baef4ac3d3',
-
+  FLOWISE_API_KEY: 'uYKqgIP-uEKu140t13_Mjh2S5SDjL_im4ovxwmdGcMM',
   // Session ID: anonymous per-tab session
   SESSION_ID: 'session_' + Math.random().toString(36).slice(2, 11),
 
@@ -824,7 +824,10 @@ async function sendMessage(overrideText) {
 
     const res = await fetch(CONFIG.FLOWISE_API, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + CONFIG.FLOWISE_API_KEY,
+      },
       body: JSON.stringify(body),
     });
 
